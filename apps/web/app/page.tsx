@@ -1,10 +1,9 @@
 "use client";
 
 import { useCharacterStore } from "@/lib/store";
-import { SPECIES } from "@/lib/wfrp/species";
-import { CAREERS } from "@/lib/wfrp/careers";
 import Link from "next/link";
 import { Button } from "@workspace/ui/components/button";
+import { getSpeciesName, getCareerName } from "@/lib/services/helpers/lookup";
 
 export default function HomePage() {
   const { characters, addCharacter, deleteCharacter, setCurrentCharacter } =
@@ -12,16 +11,6 @@ export default function HomePage() {
 
   const handleNewCharacter = () => {
     addCharacter();
-  };
-
-  const getSpeciesName = (id: string) => {
-    const species = SPECIES.find((s) => s.id === id);
-    return species?.nameRu || species?.name || id;
-  };
-
-  const getCareerName = (id: string) => {
-    const career = CAREERS.find((c) => c.id === id);
-    return career?.nameRu || career?.name || id;
   };
 
   return (

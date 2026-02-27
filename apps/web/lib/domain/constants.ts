@@ -1,0 +1,9 @@
+export const XP_COST_CHARACTERISTIC = 100;
+export const XP_COST_SKILL = 100;
+export const XP_COST_TALENT = 200;
+
+export const MAX_SKILL_ADVANCES_PER_SKILL = 10;
+export const TOTAL_CAREER_SKILL_POINTS = 40;
+export const SKILLS_NEEDED_FOR_CAREER_CHANGE = 5;
+
+export const CHOOSE_CHARACTERISTICS_XP_PENALTY = 100;

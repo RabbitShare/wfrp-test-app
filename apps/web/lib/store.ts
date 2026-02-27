@@ -7,8 +7,8 @@ import {
   calculateWounds,
   calculateResilience,
   calculateResolve,
-} from "../lib/wfrp/character";
-import { Species } from "../lib/wfrp/species";
+} from "./wfrp/character";
+import { Species } from "./wfrp/species";
 
 interface CharacterStore {
   characters: Character[];

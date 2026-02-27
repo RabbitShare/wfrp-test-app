@@ -5,24 +5,20 @@ import { useRouter } from "next/navigation";
 import { useCharacterStore } from "@/lib/store";
 import { SPECIES } from "@/lib/wfrp/species";
 import { CAREERS } from "@/lib/wfrp/careers";
-import { SKILLS } from "@/lib/wfrp/skills";
-import { TALENTS } from "@/lib/wfrp/talents";
 import {
   CHARACTERISTICS,
   CHARACTERISTIC_KEYS,
   CharacteristicKey,
-  CharacteristicValues,
-  roll2d10,
-  getCharacteristicValue,
 } from "@/lib/wfrp/characteristics";
-import {
-  calculateWounds,
-  calculateResilience,
-  calculateResolve,
-  Character,
-  getStatusFromCareer,
-} from "@/lib/wfrp/character";
+import { Character } from "@/lib/wfrp/character";
 import { Button } from "@workspace/ui/components/button";
+import {
+  getAvailableXp,
+  getCareerSkills,
+  getCareerTalents,
+  assembleCharacter,
+  rollAllCharacteristics,
+} from "@/lib/services/character/creation";
 
 type Step = "species" | "career" | "characteristics" | "skills" | "name";
 
@@ -33,13 +29,6 @@ const STEPS: { id: Step; label: string }[] = [
   { id: "skills", label: "Навыки" },
   { id: "name", label: "Имя" },
 ];
-
-type RollResult = {
-  d1: number;
-  d2: number;
-  total: number;
-  value: number;
-};
 
 export default function CreateCharacterPage() {
   const router = useRouter();
@@ -53,21 +42,25 @@ export default function CreateCharacterPage() {
   const [characteristicsMethod, setCharacteristicsMethod] = useState<
     "random" | "choose"
   >("random");
-  const [tempCharacteristics, setTempCharacteristics] =
-    useState<CharacteristicValues>({
-      ws: 20,
-      bs: 20,
-      s: 20,
-      t: 20,
-      i: 20,
-      ag: 20,
-      dex: 20,
-      int: 20,
-      wp: 20,
-      fel: 20,
-    });
+  const [tempCharacteristics, setTempCharacteristics] = useState<
+    Record<CharacteristicKey, number>
+  >({
+    ws: 20,
+    bs: 20,
+    s: 20,
+    t: 20,
+    i: 20,
+    ag: 20,
+    dex: 20,
+    int: 20,
+    wp: 20,
+    fel: 20,
+  });
   const [rollResults, setRollResults] = useState<
-    Record<CharacteristicKey, RollResult | null>
+    Record<
+      CharacteristicKey,
+      { d1: number; d2: number; total: number; value: number } | null
+    >
   >({
     ws: null,
     bs: null,
@@ -101,58 +94,10 @@ export default function CreateCharacterPage() {
   const currentSpecies = SPECIES.find((s) => s.id === selectedSpeciesId);
   const currentCareer = CAREERS.find((c) => c.id === selectedCareerId);
 
-  const rollAllCharacteristics = () => {
-    const rolled: CharacteristicValues = {} as CharacteristicValues;
-    const results: Record<CharacteristicKey, RollResult | null> = {} as Record<
-      CharacteristicKey,
-      RollResult | null
-    >;
-
-    CHARACTERISTIC_KEYS.forEach((key) => {
-      const d1 = Math.floor(Math.random() * 10) + 1;
-      const d2 = Math.floor(Math.random() * 10) + 1;
-      const total = d1 + d2;
-      const value = getCharacteristicValue(total);
-      rolled[key] = value;
-      results[key] = { d1, d2, total, value };
-    });
-
-    setTempCharacteristics(rolled);
-    setRollResults(results);
-  };
-
-  const applySpeciesModifiers = () => {
-    if (!currentSpecies) return tempCharacteristics;
-    const modified = { ...tempCharacteristics };
-    Object.entries(currentSpecies.modifiers).forEach(([key, value]) => {
-      if (value) {
-        modified[key as CharacteristicKey] += value;
-      }
-    });
-    return modified;
-  };
-
-  const getAvailableXp = () => {
-    if (!currentSpecies) return 0;
-    let xp = currentSpecies.randomizeXp;
-    if (characteristicsMethod === "choose") {
-      xp -= 100;
-    }
-    return Math.max(0, xp) + (character?.xp || 0);
-  };
-
-  const getCareerSkills = () => {
-    if (!currentCareer) return [];
-    return currentCareer.skills
-      .map((id) => SKILLS.find((s) => s.id === id))
-      .filter(Boolean);
-  };
-
-  const getCareerTalents = () => {
-    if (!currentCareer) return [];
-    return currentCareer.talents
-      .map((id) => TALENTS.find((t) => t.id === id))
-      .filter(Boolean);
+  const handleRollCharacteristics = () => {
+    const result = rollAllCharacteristics();
+    setTempCharacteristics(result.characteristics);
+    setRollResults(result.results);
   };
 
   const handleNext = () => {
@@ -172,27 +117,14 @@ export default function CreateCharacterPage() {
   const handleSave = () => {
     if (!character || !currentSpecies || !currentCareer) return;
 
-    const finalCharacteristics = applySpeciesModifiers();
-    const wounds = calculateWounds(finalCharacteristics);
-    const resilience = calculateResilience(finalCharacteristics);
-    const resolve = calculateResolve(finalCharacteristics);
-
-    const updatedCharacter: Character = {
-      ...character,
-      name: name || "Безымянный",
-      speciesId: selectedSpeciesId,
-      careerId: selectedCareerId,
-      characteristics: finalCharacteristics,
-      skills: getCareerSkills().map((s) => ({ id: s!.id, advances: 0 })),
-      talents: getCareerTalents().map((t) => ({ id: t!.id, advances: 0 })),
-      status: getStatusFromCareer(currentCareer?.status || "None"),
-      xp: getAvailableXp(),
-      spentXp: 0,
-      wounds,
-      currentWounds: wounds,
-      resilience,
-      resolve,
-    };
+    const updatedCharacter = assembleCharacter({
+      baseCharacter: character,
+      name,
+      species: currentSpecies,
+      career: currentCareer,
+      characteristics: tempCharacteristics,
+      characteristicsMethod,
+    });
 
     updateCharacter(character.id, updatedCharacter);
     router.push(`/character/${character.id}`);
@@ -318,7 +250,7 @@ export default function CreateCharacterPage() {
               <button
                 onClick={() => {
                   setCharacteristicsMethod("random");
-                  rollAllCharacteristics();
+                  handleRollCharacteristics();
                 }}
                 className={`px-3 sm:px-4 py-2 rounded text-sm ${
                   characteristicsMethod === "random"
@@ -412,17 +344,17 @@ export default function CreateCharacterPage() {
                     Навыки профессии:
                   </h3>
                   <div className="flex flex-wrap gap-1 sm:gap-2">
-                    {currentCareer.skills.map((skillId) => {
-                      const skill = SKILLS.find((s) => s.id === skillId);
-                      return skill ? (
-                        <span
-                          key={skill.id}
-                          className="px-2 py-1 bg-stone-700 rounded text-xs sm:text-sm"
-                        >
-                          {skill.nameRu || skill.name}
-                        </span>
-                      ) : null;
-                    })}
+                    {getCareerSkills(currentCareer).map(
+                      (skill) =>
+                        skill && (
+                          <span
+                            key={skill.id}
+                            className="px-2 py-1 bg-stone-700 rounded text-xs sm:text-sm"
+                          >
+                            {skill.nameRu || skill.name}
+                          </span>
+                        ),
+                    )}
                   </div>
                 </div>
 
@@ -431,17 +363,16 @@ export default function CreateCharacterPage() {
                     Таланты профессии:
                   </h3>
                   <div className="flex flex-wrap gap-1 sm:gap-2">
-                    {currentCareer.talents.map((talentId) => {
-                      const talent = TALENTS.find((t) => t.id === talentId);
-                      return talent ? (
+                    {getCareerTalents(currentCareer).map((talent) =>
+                      talent ? (
                         <span
                           key={talent.id}
                           className="px-2 py-1 bg-stone-700 rounded text-xs sm:text-sm"
                         >
                           {talent.nameRu || talent.name}
                         </span>
-                      ) : null;
-                    })}
+                      ) : null,
+                    )}
                   </div>
                 </div>
               </>
@@ -450,7 +381,9 @@ export default function CreateCharacterPage() {
             <div className="text-stone-400 text-sm sm:text-base">
               Доступно XP:{" "}
               <span className="text-amber-400 font-bold">
-                {getAvailableXp()}
+                {currentSpecies
+                  ? getAvailableXp(currentSpecies, characteristicsMethod)
+                  : 0}
               </span>
             </div>
           </div>
@@ -474,7 +407,12 @@ export default function CreateCharacterPage() {
               <div className="space-y-1 text-stone-300 text-sm sm:text-base">
                 <p>Раса: {currentSpecies?.nameRu}</p>
                 <p>Профессия: {currentCareer?.nameRu}</p>
-                <p>Доступно XP: {getAvailableXp()}</p>
+                <p>
+                  Доступно XP:{" "}
+                  {currentSpecies
+                    ? getAvailableXp(currentSpecies, characteristicsMethod)
+                    : 0}
+                </p>
               </div>
             </div>
           </div>

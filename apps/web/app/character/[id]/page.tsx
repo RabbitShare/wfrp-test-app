@@ -15,10 +15,19 @@ import {
 } from "@/lib/wfrp/characteristics";
 import { Character } from "@/lib/wfrp/character";
 import { Button } from "@workspace/ui/components/button";
-
-const XP_COST_CHARACTERISTIC = 100;
-const XP_COST_SKILL = 100;
-const XP_COST_TALENT = 200;
+import { getSkillValue } from "@/lib/services/character/calculations";
+import {
+  advanceCharacteristic,
+  advanceSkill,
+  advanceTalent,
+  addXp,
+} from "@/lib/services/character/advancement";
+import { getSkillName, getTalentName } from "@/lib/services/helpers/lookup";
+import {
+  XP_COST_CHARACTERISTIC,
+  XP_COST_SKILL,
+  XP_COST_TALENT,
+} from "@/lib/domain/constants";
 
 export default function CharacterPage() {
   const params = useParams();
@@ -50,79 +59,32 @@ export default function CharacterPage() {
   const species = SPECIES.find((s) => s.id === character.speciesId);
   const career = CAREERS.find((c) => c.id === character.careerId);
 
-  const getSkillName = (id: string) => {
-    const skill = SKILLS.find((s) => s.id === id);
-    return skill?.nameRu || skill?.name || id;
-  };
-
-  const getTalentName = (id: string) => {
-    const talent = TALENTS.find((t) => t.id === id);
-    return talent?.nameRu || talent?.name || id;
-  };
-
-  const getSkillCharacteristic = (skillId: string) => {
-    const skill = SKILLS.find((s) => s.id === skillId);
-    return skill?.characteristic || "int";
-  };
-
-  const getSkillValue = (skillId: string) => {
-    const charSkill = character.skills.find((s) => s.id === skillId);
-    const advances = charSkill?.advances || 0;
-    const char = getSkillCharacteristic(skillId);
-    const charValue =
-      character.characteristics[char as CharacteristicKey] || 10;
-    return Math.floor(charValue / 10) * 10 + advances * 5;
-  };
-
   const handleAddXp = () => {
     if (earnedXp > 0) {
-      updateCharacter(character.id, {
-        xp: character.xp + earnedXp,
-      });
+      const result = addXp(character, earnedXp);
+      updateCharacter(character.id, result.character as Character);
       setEarnedXp(0);
     }
   };
 
-  const advanceCharacteristic = (key: CharacteristicKey) => {
-    if (character.xp >= XP_COST_CHARACTERISTIC) {
-      updateCharacter(character.id, {
-        characteristics: {
-          ...character.characteristics,
-          [key]: character.characteristics[key] + 5,
-        },
-        xp: character.xp - XP_COST_CHARACTERISTIC,
-        spentXp: character.spentXp + XP_COST_CHARACTERISTIC,
-      });
+  const handleAdvanceCharacteristic = (key: CharacteristicKey) => {
+    const result = advanceCharacteristic(character, key);
+    if (result) {
+      updateCharacter(character.id, result.character as Character);
     }
   };
 
-  const advanceSkill = (skillId: string) => {
-    if (character.xp >= XP_COST_SKILL) {
-      const existingSkill = character.skills.find((s) => s.id === skillId);
-      const newSkills = existingSkill
-        ? character.skills.map((s) =>
-            s.id === skillId ? { ...s, advances: s.advances + 1 } : s,
-          )
-        : [...character.skills, { id: skillId, advances: 1 }];
-
-      updateCharacter(character.id, {
-        skills: newSkills,
-        xp: character.xp - XP_COST_SKILL,
-        spentXp: character.spentXp + XP_COST_SKILL,
-      });
+  const handleAdvanceSkill = (skillId: string) => {
+    const result = advanceSkill(character, skillId);
+    if (result) {
+      updateCharacter(character.id, result.character as Character);
     }
   };
 
-  const advanceTalent = (talentId: string) => {
-    if (character.xp >= XP_COST_TALENT) {
-      const existingTalent = character.talents.find((t) => t.id === talentId);
-      if (existingTalent) return;
-
-      updateCharacter(character.id, {
-        talents: [...character.talents, { id: talentId, advances: 1 }],
-        xp: character.xp - XP_COST_TALENT,
-        spentXp: character.spentXp + XP_COST_TALENT,
-      });
+  const handleAdvanceTalent = (talentId: string) => {
+    const result = advanceTalent(character, talentId);
+    if (result) {
+      updateCharacter(character.id, result.character as Character);
     }
   };
 
@@ -291,7 +253,8 @@ export default function CharacterPage() {
                     {getSkillName(charSkill.id)}
                   </span>
                   <span className="text-amber-400 font-bold text-sm sm:text-base">
-                    {getSkillValue(charSkill.id)}% ({charSkill.advances})
+                    {getSkillValue(character, charSkill.id)}% (
+                    {charSkill.advances})
                   </span>
                 </div>
               ))}
@@ -332,7 +295,7 @@ export default function CharacterPage() {
                   return (
                     <button
                       key={key}
-                      onClick={() => advanceCharacteristic(key)}
+                      onClick={() => handleAdvanceCharacteristic(key)}
                       disabled={character.xp < XP_COST_CHARACTERISTIC}
                       className="bg-stone-700 p-2 rounded hover:bg-stone-600 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
                     >
@@ -357,7 +320,7 @@ export default function CharacterPage() {
                   return (
                     <button
                       key={skill.id}
-                      onClick={() => advanceSkill(skill.id)}
+                      onClick={() => handleAdvanceSkill(skill.id)}
                       disabled={character.xp < XP_COST_SKILL}
                       className="bg-stone-700 p-2 rounded hover:bg-stone-600 disabled:opacity-50 disabled:cursor-not-allowed flex justify-between text-xs sm:text-sm"
                     >
@@ -383,7 +346,7 @@ export default function CharacterPage() {
                   return (
                     <button
                       key={talent.id}
-                      onClick={() => advanceTalent(talent.id)}
+                      onClick={() => handleAdvanceTalent(talent.id)}
                       disabled={character.xp < XP_COST_TALENT || hasTalent}
                       className="bg-stone-700 px-3 py-2 rounded hover:bg-stone-600 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
                     >
