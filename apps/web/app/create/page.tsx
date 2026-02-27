@@ -13,6 +13,13 @@ import {
 import { Character } from "@/lib/wfrp/character";
 import { Button } from "@workspace/ui/components/button";
 import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card";
+import { Input } from "@workspace/ui/components/input";
+import {
   getAvailableXp,
   getCareerSkills,
   getCareerTalents,
@@ -132,28 +139,28 @@ export default function CreateCharacterPage() {
 
   if (!character) {
     return (
-      <div className="min-h-screen bg-stone-900 text-stone-100 p-4 sm:p-6">
+      <div className="min-h-screen bg-background text-foreground p-4 sm:p-6">
         Загрузка...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-stone-900 text-stone-100 p-4 sm:p-6">
+    <div className="min-h-screen bg-background text-foreground p-4 sm:p-6">
       <div className="max-w-3xl mx-auto">
         <header className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-amber-500 mb-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-primary mb-4">
             Создание персонажа
           </h1>
           <div className="flex flex-wrap gap-1 sm:gap-2 overflow-x-auto pb-2">
             {STEPS.map((s, i) => (
               <div key={s.id} className="flex items-center flex-shrink-0">
-                {i > 0 && <span className="text-stone-600 mx-1">→</span>}
+                {i > 0 && <span className="text-muted-foreground mx-1">→</span>}
                 <span
                   className={`px-2 sm:px-3 py-1 rounded text-xs sm:text-sm whitespace-nowrap ${
                     step === s.id
-                      ? "bg-amber-600 text-white"
-                      : "bg-stone-800 text-stone-400"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
                   }`}
                 >
                   {s.label}
@@ -168,7 +175,7 @@ export default function CreateCharacterPage() {
             <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">
               Выберите расу
             </h2>
-            <p className="text-stone-400 text-sm sm:text-base mb-3 sm:mb-4">
+            <p className="text-muted-foreground text-sm sm:text-base mb-3 sm:mb-4">
               При броске вы получите {currentSpecies?.randomizeXp || 0} XP
               бонуса
             </p>
@@ -179,19 +186,19 @@ export default function CreateCharacterPage() {
                   onClick={() => setSelectedSpeciesId(species.id)}
                   className={`p-3 sm:p-4 rounded-lg border text-left transition-colors ${
                     selectedSpeciesId === species.id
-                      ? "border-amber-500 bg-amber-900/20"
-                      : "border-stone-700 bg-stone-800 hover:border-stone-600"
+                      ? "border-primary bg-primary/10"
+                      : "border-border bg-card hover:border-muted-foreground"
                   }`}
                 >
-                  <div className="font-semibold text-amber-400 text-sm sm:text-base">
+                  <div className="font-semibold text-primary text-sm sm:text-base">
                     {species.nameRu}
                   </div>
-                  <div className="text-xs sm:text-sm text-stone-400">
+                  <div className="text-xs sm:text-sm text-muted-foreground">
                     {species.name}
                   </div>
                   {species.modifiers &&
                     Object.keys(species.modifiers).length > 0 && (
-                      <div className="text-xs text-stone-500 mt-1 sm:mt-2">
+                      <div className="text-xs text-muted-foreground mt-1 sm:mt-2">
                         Модификаторы:{" "}
                         {Object.entries(species.modifiers)
                           .map(([k, v]) => {
@@ -221,17 +228,17 @@ export default function CreateCharacterPage() {
                   onClick={() => setSelectedCareerId(career.id)}
                   className={`p-3 sm:p-4 rounded-lg border text-left transition-colors ${
                     selectedCareerId === career.id
-                      ? "border-amber-500 bg-amber-900/20"
-                      : "border-stone-700 bg-stone-800 hover:border-stone-600"
+                      ? "border-primary bg-primary/10"
+                      : "border-border bg-card hover:border-muted-foreground"
                   }`}
                 >
-                  <div className="font-semibold text-amber-400 text-sm sm:text-base">
+                  <div className="font-semibold text-primary text-sm sm:text-base">
                     {career.nameRu}
                   </div>
-                  <div className="text-xs sm:text-sm text-stone-400">
+                  <div className="text-xs sm:text-sm text-muted-foreground">
                     {career.name}
                   </div>
-                  <div className="text-xs sm:text-sm text-stone-500">
+                  <div className="text-xs sm:text-sm text-muted-foreground">
                     {career.classRu || career.class}
                   </div>
                 </button>
@@ -247,29 +254,25 @@ export default function CreateCharacterPage() {
             </h2>
 
             <div className="flex flex-wrap gap-2 sm:gap-4 mb-4">
-              <button
+              <Button
                 onClick={() => {
                   setCharacteristicsMethod("random");
                   handleRollCharacteristics();
                 }}
-                className={`px-3 sm:px-4 py-2 rounded text-sm ${
-                  characteristicsMethod === "random"
-                    ? "bg-amber-600 text-white"
-                    : "bg-stone-800 text-stone-400"
-                }`}
+                variant={
+                  characteristicsMethod === "random" ? "default" : "outline"
+                }
               >
                 Бросить 2d10
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => setCharacteristicsMethod("choose")}
-                className={`px-3 sm:px-4 py-2 rounded text-sm ${
-                  characteristicsMethod === "choose"
-                    ? "bg-amber-600 text-white"
-                    : "bg-stone-800 text-stone-400"
-                }`}
+                variant={
+                  characteristicsMethod === "choose" ? "default" : "outline"
+                }
               >
                 Выбрать (-100 XP)
-              </button>
+              </Button>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-2 sm:gap-4">
@@ -277,56 +280,60 @@ export default function CreateCharacterPage() {
                 const roll = rollResults[key];
                 const char = CHARACTERISTICS.find((c) => c.key === key);
                 return (
-                  <div key={key} className="bg-stone-800 p-2 sm:p-3 rounded">
+                  <Card key={key} className="p-2 sm:p-3">
                     <div className="flex justify-between items-center mb-1">
                       <span className="font-medium text-xs sm:text-sm">
                         {char?.shortName}
                       </span>
                       {roll && (
-                        <span className="text-xs text-stone-500">
+                        <span className="text-xs text-muted-foreground">
                           [{roll.d1}+{roll.d2}={roll.total}]
                         </span>
                       )}
                     </div>
-                    <div className="text-amber-400 text-lg sm:text-xl font-bold">
+                    <div className="text-primary text-lg sm:text-xl font-bold">
                       {tempCharacteristics[key]}
                     </div>
-                  </div>
+                  </Card>
                 );
               })}
             </div>
 
             {currentSpecies && (
-              <div className="bg-stone-800 p-3 sm:p-4 rounded mt-3 sm:mt-4">
-                <h3 className="font-semibold mb-2 text-sm sm:text-base">
-                  С модификаторами расы:
-                </h3>
-                <div className="grid grid-cols-2 gap-1 sm:gap-2 text-xs sm:text-sm">
-                  {CHARACTERISTIC_KEYS.map((key) => {
-                    const modifier = currentSpecies.modifiers[key] || 0;
-                    const total = tempCharacteristics[key] + modifier;
-                    const char = CHARACTERISTICS.find((c) => c.key === key);
-                    return (
-                      <div key={key} className="flex justify-between">
-                        <span>{char?.shortName}:</span>
-                        <span
-                          className={
-                            modifier > 0
-                              ? "text-green-400"
-                              : modifier < 0
-                                ? "text-red-400"
-                                : ""
-                          }
-                        >
-                          {total}{" "}
-                          {modifier !== 0 &&
-                            `(${modifier > 0 ? "+" : ""}${modifier})`}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+              <Card className="p-3 sm:p-4 mt-3 sm:mt-4">
+                <CardHeader className="p-0 mb-2">
+                  <CardTitle className="text-sm sm:text-base">
+                    С модификаторами расы:
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="grid grid-cols-2 gap-1 sm:gap-2 text-xs sm:text-sm">
+                    {CHARACTERISTIC_KEYS.map((key) => {
+                      const modifier = currentSpecies.modifiers[key] || 0;
+                      const total = tempCharacteristics[key] + modifier;
+                      const char = CHARACTERISTICS.find((c) => c.key === key);
+                      return (
+                        <div key={key} className="flex justify-between">
+                          <span>{char?.shortName}:</span>
+                          <span
+                            className={
+                              modifier > 0
+                                ? "text-green-500"
+                                : modifier < 0
+                                  ? "text-destructive"
+                                  : ""
+                            }
+                          >
+                            {total}{" "}
+                            {modifier !== 0 &&
+                              `(${modifier > 0 ? "+" : ""}${modifier})`}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
             )}
           </div>
         )}
@@ -339,48 +346,56 @@ export default function CreateCharacterPage() {
 
             {currentCareer && (
               <>
-                <div className="bg-stone-800 p-3 sm:p-4 rounded">
-                  <h3 className="font-semibold text-amber-400 mb-2 text-sm sm:text-base">
-                    Навыки профессии:
-                  </h3>
-                  <div className="flex flex-wrap gap-1 sm:gap-2">
-                    {getCareerSkills(currentCareer).map(
-                      (skill) =>
-                        skill && (
-                          <span
-                            key={skill.id}
-                            className="px-2 py-1 bg-stone-700 rounded text-xs sm:text-sm"
-                          >
-                            {skill.nameRu || skill.name}
-                          </span>
-                        ),
-                    )}
-                  </div>
-                </div>
+                <Card className="p-3 sm:p-4">
+                  <CardHeader className="p-0 mb-2">
+                    <CardTitle className="text-primary text-sm sm:text-base">
+                      Навыки профессии:
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="flex flex-wrap gap-1 sm:gap-2">
+                      {getCareerSkills(currentCareer).map(
+                        (skill) =>
+                          skill && (
+                            <span
+                              key={skill.id}
+                              className="px-2 py-1 bg-muted rounded text-xs sm:text-sm"
+                            >
+                              {skill.nameRu || skill.name}
+                            </span>
+                          ),
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
 
-                <div className="bg-stone-800 p-3 sm:p-4 rounded">
-                  <h3 className="font-semibold text-amber-400 mb-2 text-sm sm:text-base">
-                    Таланты профессии:
-                  </h3>
-                  <div className="flex flex-wrap gap-1 sm:gap-2">
-                    {getCareerTalents(currentCareer).map((talent) =>
-                      talent ? (
-                        <span
-                          key={talent.id}
-                          className="px-2 py-1 bg-stone-700 rounded text-xs sm:text-sm"
-                        >
-                          {talent.nameRu || talent.name}
-                        </span>
-                      ) : null,
-                    )}
-                  </div>
-                </div>
+                <Card className="p-3 sm:p-4">
+                  <CardHeader className="p-0 mb-2">
+                    <CardTitle className="text-primary text-sm sm:text-base">
+                      Таланты профессии:
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="flex flex-wrap gap-1 sm:gap-2">
+                      {getCareerTalents(currentCareer).map((talent) =>
+                        talent ? (
+                          <span
+                            key={talent.id}
+                            className="px-2 py-1 bg-muted rounded text-xs sm:text-sm"
+                          >
+                            {talent.nameRu || talent.name}
+                          </span>
+                        ) : null,
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               </>
             )}
 
-            <div className="text-stone-400 text-sm sm:text-base">
+            <div className="text-muted-foreground text-sm sm:text-base">
               Доступно XP:{" "}
-              <span className="text-amber-400 font-bold">
+              <span className="text-primary font-bold">
                 {currentSpecies
                   ? getAvailableXp(currentSpecies, characteristicsMethod)
                   : 0}
@@ -394,27 +409,30 @@ export default function CreateCharacterPage() {
             <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">
               Имя персонажа
             </h2>
-            <input
+            <Input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Введите имя персонажа"
-              className="w-full p-3 bg-stone-800 border border-stone-700 rounded text-stone-100 placeholder:text-stone-500 text-base"
             />
 
-            <div className="bg-stone-800 p-3 sm:p-4 rounded">
-              <h3 className="font-semibold mb-2 text-sm sm:text-base">Итог:</h3>
-              <div className="space-y-1 text-stone-300 text-sm sm:text-base">
-                <p>Раса: {currentSpecies?.nameRu}</p>
-                <p>Профессия: {currentCareer?.nameRu}</p>
-                <p>
-                  Доступно XP:{" "}
-                  {currentSpecies
-                    ? getAvailableXp(currentSpecies, characteristicsMethod)
-                    : 0}
-                </p>
-              </div>
-            </div>
+            <Card className="p-3 sm:p-4">
+              <CardHeader className="p-0 mb-2">
+                <CardTitle className="text-sm sm:text-base">Итог:</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="space-y-1 text-muted-foreground text-sm sm:text-base">
+                  <p>Раса: {currentSpecies?.nameRu}</p>
+                  <p>Профессия: {currentCareer?.nameRu}</p>
+                  <p>
+                    Доступно XP:{" "}
+                    {currentSpecies
+                      ? getAvailableXp(currentSpecies, characteristicsMethod)
+                      : 0}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         )}
 
@@ -423,22 +441,19 @@ export default function CreateCharacterPage() {
             onClick={handleBack}
             variant="outline"
             disabled={step === "species"}
-            className="border-stone-600 w-full sm:w-auto"
+            className="w-full sm:w-auto"
           >
             Назад
           </Button>
 
           {step === "name" ? (
-            <Button
-              onClick={handleSave}
-              className="bg-amber-600 hover:bg-amber-700 w-full sm:w-auto"
-            >
+            <Button onClick={handleSave} className="w-full sm:w-auto">
               Завершить
             </Button>
           ) : (
             <Button
               onClick={handleNext}
-              className="bg-amber-600 hover:bg-amber-700 w-full sm:w-auto"
+              className="w-full sm:w-auto"
               disabled={
                 (step === "species" && !selectedSpeciesId) ||
                 (step === "career" && !selectedCareerId)
