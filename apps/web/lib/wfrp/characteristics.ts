@@ -105,6 +105,72 @@ export const ATTRIBUTE_TABLE: Record<number, number> = {
   40: 135,
 };
 
+export const SPECIES_BASE_ROLLS: Record<
+  string,
+  Partial<Record<CharacteristicKey, number>>
+> = {
+  human: {
+    ws: 20,
+    bs: 20,
+    s: 20,
+    t: 20,
+    i: 20,
+    ag: 20,
+    dex: 20,
+    int: 20,
+    wp: 20,
+    fel: 20,
+  },
+  dwarf: {
+    ws: 30,
+    bs: 20,
+    s: 20,
+    t: 30,
+    i: 20,
+    ag: 10,
+    dex: 30,
+    int: 20,
+    wp: 40,
+    fel: 10,
+  },
+  halfling: {
+    ws: 10,
+    bs: 30,
+    s: 10,
+    t: 20,
+    i: 20,
+    ag: 20,
+    dex: 30,
+    int: 20,
+    wp: 30,
+    fel: 30,
+  },
+  "high-elf": {
+    ws: 30,
+    bs: 30,
+    s: 20,
+    t: 20,
+    i: 40,
+    ag: 30,
+    dex: 30,
+    int: 30,
+    wp: 30,
+    fel: 20,
+  },
+  "wood-elf": {
+    ws: 30,
+    bs: 30,
+    s: 20,
+    t: 20,
+    i: 30,
+    ag: 30,
+    dex: 30,
+    int: 20,
+    wp: 20,
+    fel: 20,
+  },
+};
+
 export const roll2d10 = (): number => {
   return (
     Math.floor(Math.random() * 10) + 1 + Math.floor(Math.random() * 10) + 1
@@ -113,4 +179,52 @@ export const roll2d10 = (): number => {
 
 export const getCharacteristicValue = (roll2d10: number): number => {
   return ATTRIBUTE_TABLE[roll2d10] || 20;
+};
+
+export const rollCharacteristic = (
+  speciesId: string,
+  key: CharacteristicKey,
+): number => {
+  const baseRoll = roll2d10();
+  const speciesBase = SPECIES_BASE_ROLLS[speciesId]?.[key] || 20;
+  return baseRoll + speciesBase;
+};
+
+export const rollAllCharacteristics = (
+  speciesId: string,
+): CharacteristicValues => {
+  const result: CharacteristicValues = { ...BASE_CHARACTERISTICS };
+  for (const key of CHARACTERISTIC_KEYS) {
+    result[key] = rollCharacteristic(speciesId, key);
+  }
+  return result;
+};
+
+export const getCharacteristicRating = (value: number): number => {
+  return Math.floor(value / 10);
+};
+
+export const MIN_CHARACTERISTIC_VALUE = 4;
+export const MAX_CHARACTERISTIC_VALUE = 18;
+
+export const validateCharacteristic = (value: number): number => {
+  return Math.max(
+    MIN_CHARACTERISTIC_VALUE,
+    Math.min(MAX_CHARACTERISTIC_VALUE, value),
+  );
+};
+
+export const rollCharacteristicWithReroll = (
+  speciesId: string,
+  key: CharacteristicKey,
+  allowReroll: boolean = false,
+): number => {
+  let value = rollCharacteristic(speciesId, key);
+
+  if (allowReroll && value < MIN_CHARACTERISTIC_VALUE + 5) {
+    const rerollValue = rollCharacteristic(speciesId, key);
+    value = Math.max(value, rerollValue);
+  }
+
+  return value;
 };

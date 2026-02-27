@@ -20,6 +20,7 @@ import {
   calculateResilience,
   calculateResolve,
   Character,
+  getStatusFromCareer,
 } from "@/lib/wfrp/character";
 import { Button } from "@workspace/ui/components/button";
 
@@ -184,7 +185,7 @@ export default function CreateCharacterPage() {
       characteristics: finalCharacteristics,
       skills: getCareerSkills().map((s) => ({ id: s!.id, advances: 0 })),
       talents: getCareerTalents().map((t) => ({ id: t!.id, advances: 0 })),
-      status: currentSpecies.status.map((s) => ({ id: s, value: s })),
+      status: getStatusFromCareer(currentCareer?.status || "None"),
       xp: getAvailableXp(),
       spentXp: 0,
       wounds,

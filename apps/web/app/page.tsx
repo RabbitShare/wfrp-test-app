@@ -57,9 +57,11 @@ export default function HomePage() {
         ) : (
           <div className="grid gap-3 sm:gap-4">
             {characters.map((char) => (
-              <div
+              <Link
                 key={char.id}
-                className="bg-stone-800 rounded-lg p-4 border border-stone-700 hover:border-amber-600/50 transition-colors"
+                href={`/character/${char.id}`}
+                onClick={() => setCurrentCharacter(char.id)}
+                className="block bg-stone-800 rounded-lg p-4 border border-stone-700 hover:border-amber-600/50 transition-colors cursor-pointer"
               >
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
                   <div className="flex-1">
@@ -77,31 +79,20 @@ export default function HomePage() {
                       </span>
                     </div>
                   </div>
-                  <div className="flex gap-2 w-full sm:w-auto">
-                    <Link
-                      href={`/character/${char.id}`}
-                      className="flex-1 sm:flex-none"
-                    >
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="border-stone-600 hover:bg-stone-700 w-full sm:w-auto"
-                        onClick={() => setCurrentCharacter(char.id)}
-                      >
-                        Просмотр
-                      </Button>
-                    </Link>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => deleteCharacter(char.id)}
-                      className="bg-red-900/50 hover:bg-red-900 text-sm"
-                    >
-                      Удалить
-                    </Button>
-                  </div>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      deleteCharacter(char.id);
+                    }}
+                    className="bg-red-900/50 hover:bg-red-900 text-sm w-full sm:w-auto"
+                  >
+                    Удалить
+                  </Button>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

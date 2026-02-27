@@ -8,11 +8,12 @@ import {
   calculateResilience,
   calculateResolve,
 } from "../lib/wfrp/character";
+import { Species } from "../lib/wfrp/species";
 
 interface CharacterStore {
   characters: Character[];
   currentCharacterId: string | null;
-  addCharacter: () => Character;
+  addCharacter: (species?: Species) => Character;
   updateCharacter: (id: string, updates: Partial<Character>) => void;
   deleteCharacter: (id: string) => void;
   setCurrentCharacter: (id: string | null) => void;
@@ -25,9 +26,9 @@ export const useCharacterStore = create<CharacterStore>()(
       characters: [],
       currentCharacterId: null,
 
-      addCharacter: () => {
+      addCharacter: (species?: Species) => {
         const newCharacter: Character = {
-          ...createEmptyCharacter(),
+          ...createEmptyCharacter(species),
           id: generateId(),
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),

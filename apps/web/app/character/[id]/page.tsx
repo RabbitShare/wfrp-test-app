@@ -263,20 +263,16 @@ export default function CharacterPage() {
               </div>
             </div>
 
-            {character.status.length > 0 && (
+            {(character.status.tier !== "copper" ||
+              character.status.level > 0) && (
               <div className="bg-stone-800 p-4 rounded">
                 <h3 className="font-semibold mb-2 text-sm sm:text-base">
-                  Статусы
+                  Статус
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {character.status.map((s) => (
-                    <span
-                      key={s.id}
-                      className="px-2 py-1 bg-amber-900/30 rounded text-sm"
-                    >
-                      {s.value}
-                    </span>
-                  ))}
+                  <span className="px-2 py-1 bg-amber-900/30 rounded text-sm capitalize">
+                    {character.status.tier} {character.status.level}
+                  </span>
                 </div>
               </div>
             )}

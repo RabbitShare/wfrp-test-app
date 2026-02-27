@@ -9,6 +9,7 @@ export type Career = {
   skills: string[];
   talents: string[];
   characteristics: Record<string, number>;
+  speciesRestrictions?: string[];
 };
 
 export const CAREERS: Career[] = [
@@ -759,3 +760,35 @@ export const CAREER_CLASSES = [
 
 export const getCareersByClass = (className: string): Career[] =>
   CAREERS.filter((c) => c.class === className);
+
+export const getCareersBySpecies = (speciesId: string): Career[] =>
+  CAREERS.filter((c) => {
+    if (!c.speciesRestrictions || c.speciesRestrictions.includes("any")) {
+      return true;
+    }
+    return c.speciesRestrictions.includes(speciesId);
+  });
+
+export const getCareersByClassAndSpecies = (
+  className: string,
+  speciesId: string,
+): Career[] =>
+  CAREERS.filter((c) => {
+    if (c.class !== className) return false;
+    if (!c.speciesRestrictions || c.speciesRestrictions.includes("any")) {
+      return true;
+    }
+    return c.speciesRestrictions.includes(speciesId);
+  });
+
+export const rollRandomCareer = (
+  className: string,
+  speciesId: string,
+): Career => {
+  const availableCareers = getCareersByClassAndSpecies(className, speciesId);
+  if (availableCareers.length === 0) {
+    return CAREERS[0]!;
+  }
+  const roll = Math.floor(Math.random() * availableCareers.length);
+  return availableCareers[roll]!;
+};

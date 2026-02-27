@@ -1511,3 +1511,125 @@ export const TALENTS: Talent[] = [
 
 export const getTalentById = (id: string): Talent | undefined =>
   TALENTS.find((t) => t.id === id);
+
+export const RANDOM_TALENT_TABLE: Record<number, string> = {
+  1: "perfect-pitch",
+  2: "perfect-pitch",
+  3: "perfect-pitch",
+  4: "ambidextrous",
+  5: "ambidextrous",
+  6: "ambidextrous",
+  7: "noble-blood",
+  8: "noble-blood",
+  9: "bull",
+  10: "bull",
+  11: "bull",
+  12: "literacy",
+  13: "literacy",
+  14: "literacy",
+  15: "holy-vitality",
+  16: "holy-vitality",
+  17: "holy-vitality",
+  18: "holy-vitality",
+  19: "hardy",
+  20: "hardy",
+  21: "hardy",
+  22: "strong",
+  23: "strong",
+  24: "strong",
+  25: "strong",
+  26: "mimic",
+  27: "mimic",
+  28: "mimic",
+  29: "craftsman",
+  30: "craftsman",
+  31: "craftsman",
+  32: "deft-fingers",
+  33: "deft-fingers",
+  34: "deft-fingers",
+  35: "marksman",
+  36: "marksman",
+  37: "marksman",
+  38: "lightning-reflexes",
+  39: "lightning-reflexes",
+  40: "lightning-reflexes",
+  41: "sharp-senses",
+  42: "sharp-senses",
+  43: "sharp-senses",
+  44: "polyglot",
+  45: "polyglot",
+  46: "polyglot",
+  47: "fleet-footed",
+  48: "fleet-footed",
+  49: "fleet-footed",
+  50: "attractive",
+  51: "attractive",
+  52: "attractive",
+  53: "warrior-born",
+  54: "warrior-born",
+  55: "warrior-born",
+  56: "savvy",
+  57: "savvy",
+  58: "savvy",
+  59: "composed",
+  60: "composed",
+  61: "composed",
+  62: "strong-willed",
+  63: "strong-willed",
+  64: "strong-willed",
+  65: "step-up",
+  66: "step-up",
+  67: "step-up",
+  68: "sufficent",
+  69: "sufficent",
+  70: "sufficent",
+  71: "animal-trainer",
+  72: "animal-trainer",
+  73: "animal-trainer",
+  74: "magic-resistance",
+  75: "magic-resistance",
+  76: "magic-resistance",
+  77: "night-vision",
+  78: "night-vision",
+  79: "night-vision",
+  80: "night-vision",
+  81: "numismatist",
+  82: "numismatist",
+  83: "numismatist",
+  84: "artisan",
+  85: "artisan",
+  86: "artisan",
+  87: "stout-hearted",
+  88: "stout-hearted",
+  89: "stout-hearted",
+  90: "etiquette",
+  91: "etiquette",
+  92: "etiquette",
+  93: "fortune",
+  94: "fortune",
+  95: "fortune",
+  96: "orientation",
+  97: "orientation",
+  98: "orientation",
+  99: "sixth-sense",
+  100: "sixth-sense",
+};
+
+export const rollRandomTalent = (existingTalents: string[] = []): string => {
+  let roll = Math.floor(Math.random() * 100) + 1;
+  let talentId = RANDOM_TALENT_TABLE[roll] || "luck";
+
+  let attempts = 0;
+  while (existingTalents.includes(talentId) && attempts < 10) {
+    roll = Math.floor(Math.random() * 100) + 1;
+    talentId = RANDOM_TALENT_TABLE[roll] || "luck";
+    attempts++;
+  }
+
+  if (existingTalents.includes(talentId)) {
+    const randomIndex = Math.floor(Math.random() * TALENTS.length);
+    return TALENTS[randomIndex]?.id || "luck";
+  }
+
+  return talentId;
+};
